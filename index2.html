@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weekly Timetable</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;
+      background-color: #0a040a;
+      color: #f0f0f0;
+    }
+
+    /* --- Menu superiore --- */
+    #top-menu {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      width: 100%;
+      background: rgba(20, 20, 20, 0.9);
+      color: #fff;
+      padding: 15px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+      font-size: 1rem;
+    }
+
+    .menu-section {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #top-menu button {
+      background: #444;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    #top-menu button:hover {
+      background: #666;
+      transform: scale(1.05);
+    }
+
+    /* --- Risultato disponibilità --- */
+    #availability-result {
+      text-align: center;
+      margin-top: 15px;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+
+    /* --- Evidenzia ora corrente --- */
+    .highlight-hour {
+      border-left: 3px solid #fff !important;
+      border-right: 3px solid #fff !important;
+      font-size: 1.2em;
+    }
+
+    .dimmed {
+      opacity: 0.4;
+    }
+
+    /* Colonne nascoste solo su mobile */
+    @media (max-width: 768px) {
+      .hidden-mobile {
+        display: none !important;
+      }
+    }
+
+    /* Tabelle */
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      display: flex;
+      justify-content: center;
+    }
+
+    h2 {
+      margin-top: 20px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 80%;
+      max-width: 800px;
+      background-color: #0a040a;
+      margin-bottom: 20px;
+    }
+
+    th, td {
+      text-align: center;
+      padding: 8px;
+      color: #f0f0f0;
+    }
+
+    th {
+      background-color: #0a040a;
+    }
+
+    tr:nth-child(even) {
+      background-color: #0a040a;
+    }
+
+    .start-pc {
+      border-top-left-radius: 7%;
+      border-bottom-left-radius: 7%;
+    }
+
+    .end-pc {
+      border-top-right-radius: 7%;
+      border-bottom-right-radius: 7%;
+    }
+
+    .busy-friend1 {
+      background-color: #ff9742;
+    }
+
+    .busy-friend2 {
+      background-color: #EDC8FF;
+    }
+    .busy-friend3 {
+      background-color: #310E10;
+    }
+    .busy-friend4 {
+      background-color: #00ff00;
+    }
+    .busy-friend5 {
+      background-color: #ffd700;
+    }
+    .busy-friend6 {
+      background-color: #8000ff;
+    }
+  </style>
+</head>
+<body>
+  <!-- Menu superiore -->
+  <div id="top-menu">
+    <div class="menu-section">
+      <span>Ora attuale: <strong id="time-display"></strong></span>
+    </div>
+
+    <div class="menu-section">
+      <label for="hour-input">Disponibilità alle:</label>
+      <select id="hour-input">
+        <option value="8">08:00</option>
+        <option value="9">09:00</option>
+        <option value="10">10:00</option>
+        <option value="11">11:00</option>
+        <option value="12">12:00</option>
+        <option value="13">13:00</option>
+        <option value="14">14:00</option>
+        <option value="15">15:00</option>
+        <option value="16">16:00</option>
+        <option value="17">17:00</option>
+        <option value="18">18:00</option>
+        <option value="19">19:00</option>
+      </select>
+      <button id="check-availability">Verifica</button>
+    </div>
+
+    <div class="menu-section">
+      <button id="toggle-highlight">Evidenzia ON/OFF</button>
+    </div>
+  </div>
+
+  <div id="availability-result"></div>
+
+  <h1>Weekly Timetable</h1>
+  <div id="sunday-message" style="display:none; margin-top:20px; font-size:1.5rem; font-weight:bold; color:orange; text-align:center;">
+    Semu tutti a ripusari cugghiuni
+  </div>
+
+  <h2>Lunedì</h2>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>8:00</th>
+          <th>9:00</th>
+          <th>10:00</th>
+          <th>11:00</th>
+          <th>12:00</th>
+          <th>13:00</th>
+          <th>14:00</th>
+          <th>15:00</th>
+          <th>16:00</th>
+          <th>17:00</th>
+          <th>18:00</th>
+          <th>19:00</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Luca</td>
+          <td></td><td></td><td></td><td></td><td></td><td></td>
+          <td class="busy-friend1 start-pc"></td>
+          <td class="busy-friend1"></td>
+          <td class="busy-friend1"></td>
+          <td class="busy-friend1"></td>
+          <td class="busy-friend1 end-pc"></td>
+        </tr>
+        <tr>
+          <td>Tosca</td>
+          <td class="busy-friend2 start-pc"></td>
+          <td class="busy-friend2 end-pc"></td>
+          <td></td>
+          <td></td>
+          <td class="busy-friend2 start-pc"></td>
+          <td class="busy-friend2 end-pc"></td>
+          <td class=""></td>
+          <td></td><td></td><td></td><td></td>
+        </tr>
+        <tr>
+          <td>Gloria</td>
+          <td></td> <!--8--> 
+          <td></td> <!--9--> 
+          <td></td> <!--10--> 
+          <td class="busy-friend3 start-pc"></td> <!--11--> 
+          <td class="busy-friend3 end-pc"></td> <!--12--> 
+          <td></td> <!--13--> 
+          <td class="busy-friend3 start-pc"></td> <!--14--> 
+          <td class="busy-friend3"></td> <!--15--> 
+          <td class="busy-friend3"></td> <!--16--> 
+          <td class="busy-friend3"></td> <!--17--> 
+          <td class="busy-friend3 end-pc"></td> <!--18--> 
+          <td ></td> <!--19--> 
+        </tr>
+        <tr>
+          <td>Mattia</td>
+          <td class="busy-friend4 start-pc"></td> <!--8--> 
+          <td class="busy-friend4"></td> <!--9--> 
+          <td class="busy-friend4 end-pc"></td> <!--10--> 
+          <td></td> <!--11--> 
+          <td class="busy-friend4 start-pc"></td> <!--12--> 
+          <td class="busy-friend4"></td> <!--13--> 
+          <td class="busy-friend4 end-pc"></td> <!--14--> 
+          <td></td> <!--15--> 
+          <td></td> <!--16--> 
+          <td></td> <!--17--> 
+          <td></td> <!--18--> 
+          <td></td> <!--19--> 
+        </tr>
+        <tr>
+          <td>Leonardi</td>
+          <td class="busy-friend5 start-pc"></td> <!--8--> 
+          <td class="busy-friend5"></td> <!--9--> 
+          <td class="busy-friend5"></td> <!--10--> 
+          <td class="busy-friend5"></td> <!--11--> 
+          <td class="busy-friend5"></td> <!--12--> 
+          <td class="busy-friend5 end-pc"></td> <!--13--> 
+          <td></td> <!--14--> 
+          <td></td> <!--15--> 
+          <td></td> <!--16--> 
+          <td></td> <!--17--> 
+          <td></td> <!--18--> 
+          <td></td> <!--19--> 
+        </tr>
+        <tr>
+          <td>Samanta</td>
+          <td></td> <!--8--> 
+          <td></td> <!--9--> 
+          <td></td> <!--10--> 
+          <td></td> <!--11--> 
+          <td></td> <!--12--> 
+          <td></td> <!--13--> 
+          <td></td> <!--14--> 
+          <td></td> <!--15--> 
+          <td></td> <!--16--> 
+          <td></td> <!--17--> 
+          <td></td> <!--18--> 
+          <td></td> <!--19--> 
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Martedì</h2>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>8:00</th>
+          <th>9:00</th>
+          <th>10:00</th>
+          <th>11:00</th>
+          <th>12:00</th>
+          <th>13:00</th>
+          <th>14:00</th>
+          <th>15:00</th>
+          <th>16:00</th>
+          <th>17:00</th>
+          <th>18:00</th>
+          <th>19:00</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Luca</td>
+          <td></td><td></td><td></td><td></td><td></td><td></td>
+          <td class="busy-friend1 start-pc"></td>
+          <td class="busy-friend1"></td>
+          <td class="busy-friend1"></td>
+          <td class="busy-friend1"></td>
+          <td class="busy-friend1"></td>
+          <td class="busy-friend1 end-pc"></td>
+        </tr>
+        <tr>
+          <td>Tosca</td>
+          <td class="busy-friend2 start-pc"></td>
+          <td class="busy-friend2"></td>
+          <td class="busy-friend2"></td>
+          <td class="busy-friend2"></td>
+          <td class="busy-friend2"></td>
+          <td class="busy-friend2 end-pc"></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Gloria</td>
+          <td class="busy-friend3 start-pc"></td> <!--8--> 
+          <td class="busy-friend3"></td> <!--9--> 
+          <td class="busy-friend3"></td> <!--10--> 
+          <td class="busy-friend3"></td> <!--11--> 
+          <td class="busy-friend3 end-pc"></td> <!--12--> 
+          <td ></td> <!--13--> 
+          <td class="busy-friend3 start-pc"></td> <!--14--> 
+          <td class="busy-friend3"></td> <!--15--> 
+          <td class="busy-friend3"></td> <!--16--> 
+          <td class="busy-friend3 end-pc"></td> <!--17--> 
+          <td></td> <!--18--> 
+          <td></td> <!--19--> 
+        </tr>
+        <tr>
+          <td>Mattia</td>
+          <td class="busy-friend4 start-pc"></td> <!--8--> 
+          <td class="busy-friend4"></td> <!--9--> 
+          <td class="busy-friend4"></td> <!--10--> 
+          <td class="busy-friend4 end-pc"></td> <!--11--> 
+          <td></td> <!--12--> 
+          <td></td> <!--13--> 
+          <td></td> <!--14--> 
+          <td></td> <!--15--> 
+          <td></td> <!--16--> 
+          <td></td> <!--17--> 
+          <td></td> <!--18--> 
+          <td></td> <!--19--> 
+        </tr>
+        <tr>
+          <td>Leonardi</td>
+          <td></td> <!--8--> 
+          <td class="busy-friend5 start-pc"></td> <!--9--> 
+          <td class="busy-friend5"></td> <!--10--> 
+          <td class="busy-friend5"></td> <!--11--> 
+          <td class="busy-friend5 end-pc"></td> <!--12--> 
+          <td></td> <!--13--> 
+          <td></td> <!--14--> 
+          <td></td> <!--15--> 
+          <td></td> <!--16--> 
+          <td></td> <!--17--> 
+          <td></td> <!--18--> 
+          <td></td> <!--19--> 
+        </tr>
+        <tr>
+          <td>Samanta</td>
+          <td></td> <!--8--> 
+          <td></td> <!--9--> 
+          <td></td> <!--10--> 
+          <td></td> <!--11--> 
+          <td></td> <!--12--> 
+          <td></td> <!--13--> 
+          <td></td> <!--14--> 
+          <td></td> <!--15--> 
+          <td></td> <!--16--> 
+          <td></td> <!--17--> 
+          <td></td> <!--18--> 
+          <td></td> <!--19--> 
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Mercoledì</h2>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>8:00</th>
+          <th>9:00</th>
+          <th>10:00</th>
+          <th>11:00</th>
+          <th>12:00</th>
+          <th>13:00</th>
+          <th>14:00</th>
+          <th>15:00</th>
+          <th>16:00</th>
+          <th>17:00</th>
+          <th>18:00</th>
+          <th>19:00</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Luca</td>
+          <td></td><td></td><td></td><td></td><td></td><td></td>
+          <td class="busy-friend1 start-pc"></td>
+          <td class="busy-friend1"></td>
+          <td class="busy-friend1"></td>
+          <td class="busy-friend1"></td>
+          <td class="busy-friend1 end-pc"></td>
+        </tr>
+        <tr>
+          <td>Tosca</td>
+          <td></td>
+          <td></td>
+          <td class="busy-friend2 start-pc"></td>
+          <td class="busy-friend2"></td>
+          <td class="busy-friend2"></td>
+          <td class="busy-friend2 end-pc "></td>
+          <td></td>
+          <td></td>
+          <td></td><td></td><td></td><td></td>
+        </tr>
+        <tr>
+          <td>Gloria</td>
+          <td class="busy-friend3 start-pc"></td> <!--8--> 
+          <td class="busy-friend3"></td> <!--9--> 
+          <td class="busy-friend3"></td> <!--10--> 
+          <td class="busy-friend3"></td> <!--11--> 
+          <td class="busy-friend3 end-pc"></td> <!--12--> 
+          <td ></td> <!--13--> 
+          <td class="busy-friend3 start-pc"></td> <!--14--> 
+          <td class="busy-friend3"></td> <!--15--> 
+          <td class="busy-friend3"></td> <!--16--> 
+          <td class="busy-friend3 end-pc"></td> <!--17--> 
+          <td></td> <!--18--> 
+          <td></td> <!--19--> 
+        </tr>
+        <tr>
+          <td>Mattia</td>
+          <td class="busy-friend4 start-pc"></td> <!--8--> 
+          <td class="busy-friend4 end-pc"></td> <!--9--> 
+          <td></td> <!--10--> 
+          <td></td> <!--11--> 
+          <td class="busy-friend4 start-pc"></td> <!--12--> 
+          <td class="busy-friend4 end-pc"></td> <!--13--> 
+          <td></td> <!--14--> 
+          <td></td> <!--15--> 
+          <td></td> <!--16--> 
+          <td></td> <!--17--> 
+          <td class="busy-friend4 start-pc"></td> <!--18--> 
+          <td class="busy-friend4 end-pc"></td> <!--19--> 
+        </tr>
+        <tr>
+          <td>Leonardi</td>
+          <td class="busy-friend5 start-pc"></td> <!--8--> 
+          <td class="busy-friend5"></td> <!--9--> 
+          <td class="busy-friend5"></td> <!--10--> 
+          <td class="busy-friend5"></td> <!--11--> 
+          <td class="busy-friend5"></td> <!--12--> 
+          <td class="busy-friend5 end-pc"></td> <!--13--> 
+          <td></td> <!--14--> 
+          <td></td> <!--15--> 
+          <td></td> <!--16--> 
+          <td></td> <!--17--> 
+          <td></td> <!--18--> 
+          <td></td> <!--19--> 
+        </tr>
+        <tr>
+          <td>Samanta</td>
+          <td></td> <!--8--> 
+          <td></td> <!--9--> 
+          <td></td> <!--10--> 
+          <td></td> <!--11--> 
+          <td></td> <!--12--> 
+          <td></td> <!--13--> 
+          <td></td> <!--14--> 
+          <td></td> <!--15--> 
+          <td></td> <!--16--> 
+          <td></td> <!--17--> 
+          <td></td> <!--18--> 
+          <td></td> <!--19--> 
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Giovedì</h2>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>8:00</th>
+          <th>9:00</th>
+          <th>10:00</th>
+          <th>11:00</th>
+          <th>12:00</th>
+          <th>13:00</th>
+          <th>14:00</th>
+          <th>15:00</th>
+          <th>16:00</th>
+          <th>17:00</th>
+          <th>18:00</th>
+          <th>19:00</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Luca</td>
+          <td></td><td></td><td></td><td></td><td></td><td></td>
+          <td class="busy-friend1 start-pc"></td>
+          <td class="busy-friend1"></td>
+          <td class="busy-friend1"></td>
+          <td class="busy-friend1"></td>
+          <td class="busy-friend1"></td>
+          <td class="busy-friend1 end-pc"></td>
+        </tr>
+        <tr>
+          <td>Tosca</td>
+          <td></td>
+          <td></td>
+          <td class="busy-friend2 start-pc"></td>
+          <td class="busy-friend2"></td>
+          <td class="busy-friend2"></td>
+          <td class="busy-friend2 end-pc"></td>
+          <td></td>
+          <td></td>
+          <td></td><td></td><td></td><td></td>
+        </tr>
+        <tr>
+          <td>Gloria</td>
+          <td></td> <!--8--> 
+          <td class="busy-friend3 start-pc"></td> <!--9--> 
+          <td class="busy-friend3"></td> <!--10--> 
+          <td class="busy-friend3"></td> <!--11--> 
+          <td class="busy-friend3 end-pc"></td> <!--12--> 
+          <td></td> <!--13--> 
+          <td></td> <!--14--> 
+          <td></td> <!--15--> 
+          <td></td> <!--16--> 
+          <td></td> <!--17--> 
+          <td></td> <!--18--> 
+          <td></td> <!--19--> 
+        </tr>
+        <tr>
+          <td>Mattia</td>
+          <td class="busy-friend4 start-pc"></td> <!--8--> 
+          <td class="busy-friend4 end-pc"></td> <!--9--> 
+          <td></td> <!--10--> 
+          <td></td> <!--11--> 
+          <td class="busy-friend4 start-pc"></td> <!--12--> 
+          <td class="busy-friend4"></td> <!--13--> 
+          <td class="busy-friend4"></td> <!--14--> 
+          <td class="busy-friend4 end-pc"></td> <!--15--> 
+          <td></td> <!--16--> 
+          <td></td> <!--17--> 
+          <td></td> <!--18--> 
+          <td></td> <!--19--> 
+        </tr>
+        <tr>
+          <td>Leonardi</td>
+          <td class="busy-friend5 start-pc"></td> <!--8--> 
+          <td class="busy-friend5"></td> <!--9--> 
+          <td class="busy-friend5"></td> <!--10--> 
+          <td class="busy-friend5"></td> <!--11--> 
+          <td class="busy-friend5"></td> <!--12--> 
+          <td class="busy-friend5 end-pc"></td> <!--13--> 
+          <td></td> <!--14--> 
+          <td></td> <!--15--> 
+          <td></td> <!--16--> 
+          <td></td> <!--17--> 
+          <td></td> <!--18--> 
+          <td></td> <!--19--> 
+        </tr>
+        <tr>
+          <td>Samanta</td>
+          <td></td> <!--8--> 
+          <td></td> <!--9--> 
+          <td></td> <!--10--> 
+          <td></td> <!--11--> 
+          <td></td> <!--12--> 
+          <td></td> <!--13--> 
+          <td></td> <!--14--> 
+          <td></td> <!--15--> 
+          <td></td> <!--16--> 
+          <td></td> <!--17--> 
+          <td></td> <!--18--> 
+          <td></td> <!--19--> 
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Venerdì</h2>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>8:00</th>
+          <th>9:00</th>
+          <th>10:00</th>
+          <th>11:00</th>
+          <th>12:00</th>
+          <th>13:00</th>
+          <th>14:00</th>
+          <th>15:00</th>
+          <th>16:00</th>
+          <th>17:00</th>
+          <th>18:00</th>
+          <th>19:00</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Luca</td>
+          <td></td><td></td><td></td><td></td><td></td><td></td>
+          <td class="busy-friend1 start-pc"></td>
+          <td class="busy-friend1 end-pc"></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Tosca</td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td class="busy-friend2 start-pc"></td>
+          <td class="busy-friend2"></td>
+          <td class="busy-friend2"></td>
+          <td class="busy-friend2 end-pc"></td>
+          <td></td><td></td><td></td><td></td>
+        </tr>
+        <tr>
+          <td>Gloria</td>
+          <td></td> <!--8--> 
+          <td></td> <!--9--> 
+          <td></td> <!--10--> 
+          <td></td> <!--11--> 
+          <td></td> <!--12--> 
+          <td></td> <!--13--> 
+          <td></td> <!--14--> 
+          <td></td> <!--15--> 
+          <td></td> <!--16--> 
+          <td></td> <!--17--> 
+          <td></td> <!--18--> 
+          <td></td> <!--19--> 
+        </tr>
+        <tr>
+          <td>Mattia</td>
+          <td></td> <!--8--> 
+          <td></td> <!--9--> 
+          <td class="busy-friend4 start-pc"></td> <!--10--> 
+          <td class="busy-friend4 end-pc"></td> <!--11--> 
+          <td></td> <!--12--> 
+          <td></td> <!--13--> 
+          <td></td> <!--14--> 
+          <td></td> <!--15--> 
+          <td></td> <!--16--> 
+          <td></td> <!--17--> 
+          <td></td> <!--18--> 
+          <td></td> <!--19--> 
+        </tr>
+        <tr>
+          <td>Leonardi</td>
+          <td></td> <!--8--> 
+          <td class="busy-friend5 start-pc"></td> <!--9--> 
+          <td class="busy-friend5 end-pc"></td> <!--10--> 
+          <td></td> <!--11--> 
+          <td></td> <!--12--> 
+          <td></td> <!--13--> 
+          <td></td> <!--14--> 
+          <td></td> <!--15--> 
+          <td></td> <!--16--> 
+          <td></td> <!--17--> 
+          <td></td> <!--18--> 
+          <td></td> <!--19--> 
+        </tr>
+        <tr>
+          <td>Samanta</td>
+          <td></td> <!--8--> 
+          <td></td> <!--9--> 
+          <td></td> <!--10--> 
+          <td></td> <!--11--> 
+          <td></td> <!--12--> 
+          <td></td> <!--13--> 
+          <td></td> <!--14--> 
+          <td></td> <!--15--> 
+          <td></td> <!--16--> 
+          <td></td> <!--17--> 
+          <td></td> <!--18--> 
+          <td></td> <!--19--> 
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Sabato</h2>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>8:00</th>
+          <th>9:00</th>
+          <th>10:00</th>
+          <th>11:00</th>
+          <th>12:00</th>
+          <th>13:00</th>
+          <th>14:00</th>
+          <th>15:00</th>
+          <th>16:00</th>
+          <th>17:00</th>
+          <th>18:00</th>
+          <th>19:00</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Luca</td>
+          <td></td><td></td><td></td><td></td><td></td><td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td>Tosca</td>
+          <td class="busy-friend2 start-pc"></td>
+          <td class="busy-friend2"></td>
+          <td class="busy-friend2"></td>
+          <td class="busy-friend2 end-pc"></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td><td></td><td></td><td></td>
+        </tr>
+        <tr>
+          <td>Gloria</td>
+          <td></td> <!--8--> 
+          <td></td> <!--9--> 
+          <td></td> <!--10--> 
+          <td ></td> <!--11--> 
+          <td ></td> <!--12--> 
+          <td ></td> <!--13--> 
+          <td ></td> <!--14--> 
+          <td ></td> <!--15--> 
+          <td ></td> <!--16--> 
+          <td ></td> <!--17--> 
+          <td></td> <!--18--> 
+          <td ></td> <!--19--> 
+        </tr>
+        <tr>
+          <td>Mattia</td>
+          <td></td> <!--8--> 
+          <td></td> <!--9--> 
+          <td></td> <!--10--> 
+          <td></td> <!--11--> 
+          <td></td> <!--12--> 
+          <td></td> <!--13--> 
+          <td></td> <!--14--> 
+          <td></td> <!--15--> 
+          <td></td> <!--16--> 
+          <td></td> <!--17--> 
+          <td></td> <!--18--> 
+          <td></td> <!--19--> 
+        </tr>
+        <tr>
+          <td>Leonardi</td>
+          <td></td> <!--8--> 
+          <td></td> <!--9--> 
+          <td></td> <!--10--> 
+          <td></td> <!--11--> 
+          <td></td> <!--12--> 
+          <td></td> <!--13--> 
+          <td></td> <!--14--> 
+          <td></td> <!--15--> 
+          <td></td> <!--16--> 
+          <td></td> <!--17--> 
+          <td></td> <!--18--> 
+          <td></td> <!--19--> 
+        </tr>
+        <tr>
+          <td>Samanta</td>
+          <td></td> <!--8--> 
+          <td></td> <!--9--> 
+          <td></td> <!--10--> 
+          <td></td> <!--11--> 
+          <td></td> <!--12--> 
+          <td></td> <!--13--> 
+          <td></td> <!--14--> 
+          <td></td> <!--15--> 
+          <td></td> <!--16--> 
+          <td></td> <!--17--> 
+          <td></td> <!--18--> 
+          <td></td> <!--19--> 
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+  /* --- Mostra solo il giorno corrente --- */
+  const days = ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"];
+  const currentDay = days[new Date().getDay()];
+  const tables = document.querySelectorAll("table");
+  const headings = document.querySelectorAll("h2");
+
+  if (currentDay === "Domenica") {
+    // Nasconde tutte le tabelle e mostra il messaggio
+    tables.forEach((table, index) => {
+      table.style.display = "none";
+      headings[index].style.display = "none";
+    });
+    document.getElementById("sunday-message").style.display = "block";
+  } else {
+    // Mostra solo il giorno corrente
+    tables.forEach((table, index) => {
+      if (headings[index].textContent !== currentDay) {
+        table.style.display = "none";
+        headings[index].style.display = "none";
+      }
+    });
+  }
+
+  /* --- Orologio in tempo reale --- */
+  const timeDisplay = document.getElementById("time-display");
+  const updateTime = () => {
+    const now = new Date();
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    timeDisplay.textContent = `${hours}:${minutes}`;
+  };
+  updateTime();
+  setInterval(updateTime, 60000);
+
+  /* --- Controlla disponibilità --- */
+  const checkBtn = document.getElementById("check-availability");
+  const resultDiv = document.getElementById("availability-result");
+
+  checkBtn.addEventListener("click", () => {
+    const hour = document.getElementById("hour-input").value + ":00";
+    const visibleTable = document.querySelector("table:not([style*='display: none'])");
+    const rows = visibleTable.querySelectorAll("tbody tr");
+
+    let freeFriends = [];
+
+    rows.forEach(row => {
+      const name = row.querySelector("td").textContent;
+      const cells = row.querySelectorAll("td");
+      const headers = visibleTable.querySelectorAll("thead th");
+
+      headers.forEach((th, index) => {
+        if (th.textContent.trim() === hour) {
+          const cell = cells[index];
+          if (!cell.classList.contains("busy-friend1") && !cell.classList.contains("busy-friend2")&& !cell.classList.contains("busy-friend3")&& !cell.classList.contains("busy-friend4")&& !cell.classList.contains("busy-friend5") && !cell.classList.contains("busy-friend6") ){
+            freeFriends.push(name);
+          }
+        }
+      });
+    });
+
+    if (freeFriends.length > 0) {
+      resultDiv.textContent = "Liberi alle " + hour + ": " + freeFriends.join(", ");
+      resultDiv.style.color = "lightgreen";
+    } else {
+      resultDiv.textContent = "Tutti occupati alle " + hour;
+      resultDiv.style.color = "red";
+    }
+  });
+
+  /* --- Evidenzia ora corrente con toggle + mobile --- */
+  let highlightEnabled = true;
+
+  const highlightCurrentHour = () => {
+    const now = new Date();
+    const currentHour = now.getHours();
+
+    const visibleTable = document.querySelector("table:not([style*='display: none'])");
+    if (!visibleTable) return;
+
+    const headers = visibleTable.querySelectorAll("thead th");
+    let targetIndex = -1;
+
+    headers.forEach((th, index) => {
+      if (parseInt(th.textContent) === currentHour) {
+        targetIndex = index;
+      }
+    });
+
+    const rows = visibleTable.querySelectorAll("tr");
+
+    rows.forEach(row => {
+      row.querySelectorAll("td, th").forEach((cell, i) => {
+        cell.classList.remove("highlight-hour", "dimmed", "hidden-mobile");
+
+        if (i === 0) return; // NON nascondere mai la colonna dei nomi
+
+        if (window.innerWidth <= 768) {
+          // mostra sempre solo colonna corrente ±2
+          if (i < targetIndex - 2 || i > targetIndex + 2) {
+            cell.classList.add("hidden-mobile");
+          }
+        }
+
+        if (highlightEnabled) {
+          if (i === targetIndex) {
+            cell.classList.add("highlight-hour");
+          } else {
+            cell.classList.add("dimmed");
+          }
+        }
+      });
+    });
+
+    if (targetIndex !== -1) {
+      const targetCell = visibleTable.querySelector(
+        `tr td:nth-child(${targetIndex + 1}), tr th:nth-child(${targetIndex + 1})`
+      );
+      if (targetCell) {
+        targetCell.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+      }
+    }
+  };
+
+  highlightCurrentHour();
+  setInterval(highlightCurrentHour, 60000);
+
+  const toggleBtn = document.getElementById("toggle-highlight");
+  toggleBtn.addEventListener("click", () => {
+    highlightEnabled = !highlightEnabled;
+    highlightCurrentHour();
+  });
+});
+
+  </script>
+</body>
+</html>
